@@ -1,0 +1,134 @@
+<link rel="import" href="../polymer/polymer-element.html">
+
+<dom-module id="analog-clock">
+  <template>
+    <style>
+      :host {
+        display: block;
+      }
+
+      svg {
+        border-radius: 50%;
+        border: 4px solid var(--analog-clock-color, currentColor);
+      }
+
+      svg rect {
+        fill: var(--analog-clock-color, currentColor);
+      }
+
+      #seconds,
+      #minutes,
+      #hours {
+        transform-origin: 50% 100%;
+        transform: rotate(0deg);
+        transition: all 1000ms;
+        will-change: transform; 
+      }
+
+      #seconds {
+        display: none;
+      }
+
+      :host([show-seconds]) #seconds {
+        display: block;
+      }
+    </style>
+
+    <svg viewbox="0 0 305 305" x="0" y="0" width$="{{width}}" height$="{{width}}">
+      <rect id="minutes" x="146.9" y="40" width="10" height="113"/>
+      <rect id="hours" x="146.9" y="70" width="10" height="83"/>
+      <rect id="seconds" x="146.9" y="40" width="10" height="113"/>
+    </svg>
+
+  </template>
+  <script>
+
+    class AnalogClock extends Polymer.Element {
+
+      static get is() {return 'analog-clock'};
+
+      static get config() {
+        return {
+          properties: {
+
+            houroffset: {
+              type: Number,
+              value: 0
+            },
+
+            showSeconds: {
+              type: Boolean,
+              value: false,
+              reflectToAttribute: true
+            },
+
+            width: {
+              type: Number,
+              value: 100
+            },
+
+            _rotation: {
+              type: Object,
+              value: function() {
+                return {
+                  hours: 0,
+                  minutes: 0,
+                  seconds: 0,
+                  secondTurns: 0,
+                  minuteTurns: 0,
+                  hourTurns: 0
+                }
+              }
+            },
+
+            _tickInsterval: Number
+
+          }
+        };
+      }
+
+      connectedCallback() {
+        super.connectedCallback();
+ 
+        this.tick();
+        this._tickInsterval = setInterval(this.tick.bind(this), 1000);
+      }
+
+      disconnectedCallback() {
+        super.disconnectedCallback();
+        clearInterval(this._tickInterval);
+      }
+
+      tick() {
+        var d = new Date();
+        var minutes = d.getMinutes() / 60
+
+        this._rotation.hours = (this._getCurrentHour() / 12 * 360) + (360 / 12 * minutes);
+        this._rotation.minutes = minutes * 360;
+        this._rotation.seconds = d.getSeconds() / 60 * 360;
+
+        ['hour', 'minute', 'second'].forEach(key => {
+          if (this._rotation[key + 's'] === 0) {
+            this._rotation[key + 'Turns']++;
+          }
+        });
+
+        ['transform', 'webkitTransform', 'MozTransform'].forEach(key => {
+          ['hour', 'minute', 'second'].forEach(unit => {
+            this.$[unit + 's'].style[key] = 'rotate(' + (360 * this._rotation[unit + 'Turns'] + this._rotation[unit + 's']) + 'deg)';
+          });
+        });
+      }
+
+      _getCurrentHour() {
+        const d = new Date();
+        const currentHour = (this.houroffset + d.getHours());
+        return currentHour > 12 ? currentHour - 12 : currentHour;
+      }
+
+    }
+
+    customElements.define(AnalogClock.is, AnalogClock);
+
+  </script>
+</dom-module>
