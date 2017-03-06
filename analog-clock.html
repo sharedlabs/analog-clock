@@ -11,6 +11,7 @@
         display: block;
         border-radius: 50%;
         border: 4px solid var(--analog-clock-color, currentColor);
+        box-sizing: border-box;
       }
 
       svg rect {
@@ -88,7 +89,8 @@
 
       connectedCallback() {
         super.connectedCallback();
- 
+        this._transformVendors = ['transform', 'webkitTransform', 'MozTransform'];
+        this._watchHands = ['hour', 'minute', 'second'];
         this.tick();
         this._tickInsterval = setInterval(this.tick.bind(this), 1000);
       }
@@ -99,29 +101,36 @@
       }
 
       tick() {
-        var d = new Date();
-        var minutes = d.getMinutes() / 60
+        const d = new Date();
+        const minutes = d.getMinutes() / 60;
 
-        this._rotation.hours = (this._getCurrentHour() / 12 * 360) + (360 / 12 * minutes);
+        this._rotation.hours = (this._getHour(d) / 12 * 360) + (360 / 12 * minutes);
         this._rotation.minutes = minutes * 360;
         this._rotation.seconds = d.getSeconds() / 60 * 360;
 
-        ['hour', 'minute', 'second'].forEach(key => {
-          if (this._rotation[key + 's'] === 0) {
-            this._rotation[key + 'Turns']++;
-          }
-        });
+        if (this._rotation.seconds === 0) {
+          this._rotation.secondTurns ++;
 
-        ['transform', 'webkitTransform', 'MozTransform'].forEach(key => {
-          ['hour', 'minute', 'second'].forEach(unit => {
-            this.$[unit + 's'].style[key] = 'rotate(' + (360 * this._rotation[unit + 'Turns'] + this._rotation[unit + 's']) + 'deg)';
+          if (this._rotation.minutes === 0) {
+            this._rotation.minuteTurns ++;
+
+            if (this._rotation.hours === 0) {
+              this._rotation.hourTurns ++;
+            }
+          }
+        }
+
+        this._transformVendors.forEach(key => {
+          this._watchHands.forEach(unit => {
+            this.$[unit + 's'].style[key] = 'rotate(' +
+              (360 * this._rotation[unit + 'Turns'] +
+                this._rotation[unit + 's']) + 'deg)';
           });
         });
       }
 
-      _getCurrentHour() {
-        const d = new Date();
-        const currentHour = (this.houroffset + d.getHours());
+      _getHour(date) {
+        const currentHour = (this.houroffset + date.getHours());
         return currentHour > 12 ? currentHour - 12 : currentHour;
       }
 
