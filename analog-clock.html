@@ -48,43 +48,41 @@
 
       static get is() {return 'analog-clock'};
 
-      static get config() {
+      static get properties() {
         return {
-          properties: {
 
-            houroffset: {
-              type: Number,
-              value: 0
-            },
+          houroffset: {
+            type: Number,
+            value: 0
+          },
 
-            showSeconds: {
-              type: Boolean,
-              value: false,
-              reflectToAttribute: true
-            },
+          showSeconds: {
+            type: Boolean,
+            value: false,
+            reflectToAttribute: true
+          },
 
-            width: {
-              type: Number,
-              value: 100
-            },
+          width: {
+            type: Number,
+            value: 100
+          },
 
-            _rotation: {
-              type: Object,
-              value: function() {
-                return {
-                  hours: 0,
-                  minutes: 0,
-                  seconds: 0,
-                  secondTurns: 0,
-                  minuteTurns: 0,
-                  hourTurns: 0
-                }
+          _rotation: {
+            type: Object,
+            value: function() {
+              return {
+                hours: 0,
+                minutes: 0,
+                seconds: 0,
+                secondTurns: 0,
+                minuteTurns: 0,
+                hourTurns: 0
               }
-            },
+            }
+          },
 
-            _tickInsterval: Number
+          _tickInsterval: Number
 
-          }
         };
       }
 
